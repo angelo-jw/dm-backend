@@ -1,0 +1,2 @@
+FLASK_APP=domore.py
+FLASK_DEBUG=FALSE
