@@ -11,12 +11,13 @@ class User(db.Model):
     first_name = db.Column(db.String(64))
     last_name = db.Column(db.String(64))
     email = db.Column(db.String(120), index=True, unique=True)
+    state = db.Column(db.String(10))
     password_hash = db.Column(db.String(128))
     refresh_token = db.Column(db.String(32), index=True, unique=True)
     refresh_token_expiration = db.Column(db.DateTime)
 
     def __repr__(self):
-        return '<User {}>'.format(self.username)
+        return '<User {}>'.format(self.first_name + ' ' + self.last_name)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -28,14 +29,16 @@ class User(db.Model):
         data = {
             'id': self.id,
             'first_name': self.first_name,
-            'last_name': self.last_name
+            'last_name': self.last_name,
+            'email': self.email,
+            'state': self.state,
         }
         if include_email:
             data['email'] = self.email
         return data
 
     def from_dict(self, data, new_user=False):
-        for field in ['username', 'email', 'first_name', 'last_name']:
+        for field in ['email', 'first_name', 'last_name', 'state']:
             if field in data:
                 setattr(self, field, data[field])
         if new_user and 'password' in data:
