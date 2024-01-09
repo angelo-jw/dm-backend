@@ -9,4 +9,4 @@ while true; do
     sleep 5
 done
 flask tra
-exec gunicorn -b :8000 --access-logfile - --error-logfile - jarvis:app
+exec gunicorn -b :8000 --access-logfile - --error-logfile - domore:app
