@@ -10,6 +10,6 @@ def test_user():
         "first_name": fake.first_name(),
         "last_name": fake.last_name(),
         "email": fake.email(),
-        "password_hash": fake.word(),
+        "password": fake.pystr(min_chars=8, max_chars=16),
         "state": fake.state()
     }

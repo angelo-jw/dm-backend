@@ -1,6 +1,4 @@
-from firebase_admin import auth
-
-from app import db
+from app import db, auth_service
 from app.models import User
 
 
@@ -25,11 +23,9 @@ def create_user(data: dict):
 
 
 def _handle_user_credentials(email, password, full_name):
-    user_cred = auth.create_user(
+    user_cred = auth_service.create_user(
             email=email,
-            email_verified=False,
             password=password,
             display_name=full_name,
-            disabled=False
-        )
+    )
     return user_cred
