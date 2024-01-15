@@ -6,3 +6,8 @@ app.db
 .env
 firebase-config.json
 firebase-key.json
+firebase*
+firestore*
+.firebase*
+*logs*
+```

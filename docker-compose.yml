@@ -1,53 +1,18 @@
-version: "3"
+version: '3.8'
 services:
   domore:
-    image: domore
-    container_name: domore
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: Dockerfile
       target: domore
-      args:
-        COMMIT_HASH: ${COMMIT_HASH}
     ports:
-      - 8000:8000
-    environment:
-      - API_KEY=${API_KEY}
-      - JWT_KEY=${JWT_KEY}
-      - SQLALCHEMY_DATABASE_URI=${SQLALCHEMY_DATABASE_URI}
-      - JWT_ALGORITHM=${JWT_ALGORITHM}
-      - COMMIT_HASH=${COMMIT_HASH}
-    links:
-      - database
-    volumes:
-      - app_sourcecode:/domore
-    restart: always
-    networks:
-     - domore-network
-    labels:
-      - "com.docker.compose.build=www"
-
-  database:
-    container_name: domore-db
-    image: postgres:14
+      - "8000:8000"
+  firebase:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: firebase
     ports:
-      - 5432:5432
-    environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
-    volumes:
-      - db_data:/var/lib/mysql
-    networks:
-     - domore-network
-
-networks:
-  domore-network:
-
-volumes:
-  db_data:
-  app_sourcecode:
-    driver_opts:
-      type: none
-      device: $PWD
-      o: bind
+      - "8080:8080"
+      - "9099:9099"
+      - "5000:5000"
