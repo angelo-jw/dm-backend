@@ -1,25 +1,12 @@
-import firebase_admin
-import json
-import pyrebase
-
+from firebase_admin import initialize_app, firestore, credentials
 from flask import Flask
 from flask_cors import CORS
-
-from app.services.auth import init_auth_service
-from app.services.firebase import init_firebase, init_pyrebase
-from app.services.database import init_db
 
 from config import Config
 
 
-def init_services():
-    config_class = Config
-    firebase = init_firebase()
-    pb = init_pyrebase(config=config_class)
-    auth_service = init_auth_service(config=config_class)
-    db = init_db(config=config_class, client=firebase)
-
-    return firebase, pb, auth_service, db
+firebase = initialize_app()
+db = firestore.client()
 
 
 def create_app(config_class=Config):
@@ -31,9 +18,6 @@ def create_app(config_class=Config):
     app.register_blueprint(api_bp, url_prefix='/api')
 
     return app
-
-
-firebase, pb, auth_service, db = init_services()
 
 
 from app import models  # noqa:E402

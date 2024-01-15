@@ -1,9 +1,18 @@
 import pytest
+import requests
 import secrets
 
 from app import create_app
+from config import Config
 
 from .fixtures import *  # noqa F401, F403
+
+
+def clear_firebase():
+    firestore_url = Config.FIRESTORE_URL
+    auth_url = Config.AUTH_URL
+    requests.delete(firestore_url)
+    requests.delete(auth_url)
 
 
 @pytest.fixture
@@ -14,7 +23,7 @@ def test_app():
 
     yield flask_app
 
-    flask_app.app_context().pop()
+    clear_firebase()
 
 
 @pytest.fixture
@@ -28,4 +37,4 @@ def db_session(test_app):
     from app import db
     with test_app.app_context():
         yield db
-        db.reset()
+    clear_firebase()

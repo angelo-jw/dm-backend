@@ -1,18 +1,11 @@
 version: '3.8'
 services:
-  domore:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: domore
-    ports:
-      - "8000:8000"
   firebase:
     build:
       context: .
       dockerfile: Dockerfile
       target: firebase
     ports:
-      - "8080:8080"
-      - "9099:9099"
-      - "5000:5000"
+      - 9091:9091 # Firebase Authentication
+      - 8081:8081 # Cloud Firestore
+      - 4001:4001 # Emulator Suite UI
