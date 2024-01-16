@@ -1,11 +1,3 @@
-.PHONY: clean_db
-clean_db:
-	rm app.db
-
-.PHONY: init_db
-init_db:
-	flask db upgrade
-
 .PHONY: build docker_tag
 build: ## Create docker image with dependencies needed for development.
 	docker-compose build --build-arg COMMIT_HASH=$(git rev-parse HEAD)
