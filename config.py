@@ -1,16 +1,18 @@
+import dotenv
 import os
 
-from dotenv import load_dotenv
-
 basedir = os.path.abspath(os.path.dirname(__file__))
-load_dotenv(os.path.join(basedir, ".env"))
+dotenv.load_dotenv(os.path.join(basedir, '.env'))
 
 
 class Config(object):
-    IS_DEV = os.environ.get("IS_DEV") or "True"
-    API_KEY = os.environ.get("API_KEY")
-    SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI") if not \
-        IS_DEV else "sqlite:///" + os.path.join(basedir, "app.db")
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    JWT_KEY = os.environ.get("JWT_KEY")
-    JWT_ALGORITHM = os.environ.get("JWT_ALGORITHM")
+    FIRESTORE_EMULATOR_HOST = os.environ.get("FIRESTORE_EMULATOR_HOST")
+    FIRESTORE_AUTH_EMULATOR_HOST = os.environ.get("FIRESTORE_AUTH_EMULATOR_HOST")
+    FIRESTORE_URL = os.environ.get("FIRESTORE_URL")
+    AUTH_URL = os.environ.get("AUTH_URL")
+    CLIENT_ID = os.environ.get("CLIENT_ID")
+    CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
+    QUOTA_PROJECT_ID = os.environ.get("QUOTA_PROJECT_ID")
+    REFRESH_TOKEN = os.environ.get("REFRESH_TOKEN")
+    TYPE = os.environ.get("TYPE")
+    UNIVERSE_DOMAIN = os.environ.get("UNIVERSE_DOMAIN")

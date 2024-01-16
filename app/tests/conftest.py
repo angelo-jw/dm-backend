@@ -1,30 +1,29 @@
 import pytest
+import requests
 import secrets
 
-from app import create_app, db
+from app import create_app
+from config import Config
 
 from .fixtures import *  # noqa F401, F403
 
 
+def clear_firebase():
+    firestore_url = Config.FIRESTORE_URL
+    auth_url = Config.AUTH_URL
+    requests.delete(firestore_url)
+    requests.delete(auth_url)
+
+
 @pytest.fixture
 def test_app():
-
-    class Config:
-        TESTING = True
-        SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
-        API_KEY = "test"
-        JWT_KEY = "test"
-
-    flask_app = create_app(Config)
+    flask_app = create_app()
     flask_app.app_context().push()
     flask_app.secret_key = secrets.token_urlsafe(32)
 
-    db.create_all()
-
     yield flask_app
 
-    db.session.remove()
-    db.drop_all()
+    clear_firebase()
 
 
 @pytest.fixture
@@ -35,6 +34,7 @@ def test_client(test_app):
 
 @pytest.fixture
 def db_session(test_app):
+    from app import db
     with test_app.app_context():
-        db.session.begin_nested()
-        yield db.session
+        yield db
+    clear_firebase()
