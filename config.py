@@ -15,4 +15,5 @@ class Config(object):
     QUOTA_PROJECT_ID = os.environ.get("QUOTA_PROJECT_ID")
     REFRESH_TOKEN = os.environ.get("REFRESH_TOKEN")
     TYPE = os.environ.get("TYPE")
-    UNIVERSE_DOMAIN = os.environ.get("UNIVERSE_DOMAIN")
+    IDENTITY_TOOLKIT_URL = os.environ.get("IDENTITY_TOOLKIT_URL")
+    API_KEY = os.environ.get("API_KEY")

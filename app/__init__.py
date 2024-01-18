@@ -1,4 +1,4 @@
-from firebase_admin import initialize_app, firestore, credentials
+from firebase_admin import initialize_app, firestore
 from flask import Flask
 from flask_cors import CORS
 
