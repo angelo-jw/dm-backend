@@ -19,7 +19,6 @@ def user_factory(user_collection):
         )
         user.id = Faker().uuid4()
         user_collection.document(user.id).set(user.to_dict())
-        users = list(user_collection.limit(4).get())
         test_user = user.to_dict()
         test_user['password'] = kwargs['password']
         return test_user
