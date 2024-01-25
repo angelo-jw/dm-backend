@@ -7,3 +7,6 @@ app.db
 firebase-config.json
 firebase-key.json
 application_default_credentials.json
+.firebase
+.env.stage
+firebase-credentials.json
