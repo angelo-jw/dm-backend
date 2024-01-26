@@ -1,7 +1,7 @@
 # Project Do-More: Flask and Firebase Application
 
 ## Introduction
-This is the server side of the DoMore App, a Flask web application integrated with Firebase for Firestore and authentication.
+This is the server side of the DoMore App, a Flask web application integrated with Firebase for Firestore and authentication. It's deployed in a Docker image to GCloud Run.
 
 ## Prerequisites
 To work on this project, ensure you have the following installed:
