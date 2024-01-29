@@ -10,14 +10,12 @@ class User:
     email: str
     state: str
     created_time: datetime = datetime.utcnow()
-    id: Optional[str] = None
 
     def __repr__(self):
         return '<User {}>'.format(self.full_name)
 
     def to_dict(self, include_email=False):
         data = {
-            'id': self.id,
             'first_name': self.first_name,
             'last_name': self.last_name,
             'email': self.email,
