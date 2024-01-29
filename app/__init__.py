@@ -24,7 +24,11 @@ db = firestore.client()
 
 def create_app(config_class=Config):
     app = Flask(__name__)
-    CORS(app)
+    CORS(
+        app,
+        supports_credentials=True,
+        resources={r"/api/*": {"origins": "*"}},
+    )
     app.config.from_object(config_class)
 
     from app.api import bp as api_bp
