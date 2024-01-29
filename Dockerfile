@@ -24,4 +24,4 @@ ENV FLASK_APP domore.py
 
 EXPOSE 8080
 
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "domore:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "--preload", "domore:app"]
