@@ -1,25 +1,27 @@
-FROM openjdk:11-jre-slim as firebase
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim
 
-# Install Node.js
+# Set the working directory in the container
+WORKDIR /usr/src/app
+
+# Install system dependencies
 RUN apt-get update && \
-    apt-get install -y curl gnupg && \
-    curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get install -y nodejs && \
+    apt-get install -y gcc python3-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Firebase CLI
-RUN npm install -g firebase-tools
+# Install Python dependencies
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
+RUN pip install gunicorn pymysql cryptography
 
-WORKDIR /home/domore
+# Copy the current directory contents into the container at /usr/src/app
+COPY domore.py .
+COPY config.py .
+COPY app app
 
-# Copy Firebase configuration files
-COPY .firebaserc .firebaserc
-COPY firebase.json firebase.json
-COPY firestore.rules firestore.rules
-COPY firestore.indexes.json firestore.indexes.json
 
-# Expose the necessary ports
-EXPOSE 9091 8081 4001
+ENV FLASK_APP domore.py
 
-# Define entrypoint
-ENTRYPOINT ["firebase", "emulators:start", "--only", "firestore,auth"]
+EXPOSE 8080
+
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "domore:app"]

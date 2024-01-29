@@ -3,7 +3,7 @@ services:
   firebase:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: infrastructure/Dockerfile.local
       target: firebase
     ports:
       - 9091:9091 # Firebase Authentication
