@@ -7,7 +7,7 @@ This is the server side of the DoMore App, a Flask web application integrated wi
 To work on this project, ensure you have the following installed:
 - **Python 3.11**: The core language used for the project.
 - **Docker**: For running Firebase emulators.
-- **Make**: To use the provided Makefile commands for Docker operations.
+- **Make**: To use the provided Makefile commands for Docker operations
 
 ## Setup
 
