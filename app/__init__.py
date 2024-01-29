@@ -9,9 +9,12 @@ from flask_cors import CORS
 from config import Config
 
 encoded_credentials = os.environ.get("GOOGLE_CREDENTIALS")
-decoded_credentials = base64.b64decode(encoded_credentials)
-firebase_credential = credentials.Certificate(json.loads(decoded_credentials))
-firebase = initialize_app(firebase_credential)
+if encoded_credentials:
+    decoded_credentials = base64.b64decode(encoded_credentials)
+    firebase_credential = credentials.Certificate(json.loads(decoded_credentials))
+    firebase = initialize_app(firebase_credential)
+else:
+    firebase = initialize_app()
 db = firestore.client()
 
 
@@ -21,7 +24,8 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
 
     from app.api import bp as api_bp
-    app.register_blueprint(api_bp, url_prefix='/api')
+
+    app.register_blueprint(api_bp, url_prefix="/api")
 
     return app
 
