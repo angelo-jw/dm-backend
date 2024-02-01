@@ -103,6 +103,8 @@ def delete_activity(activity_id):
 def get_activities_per_type():
     try:
         data = request.get_json() or {}
+        if not data.get("start_date"):
+            raise Exception("Missing required fields start_date")
         user_id = request.user.get("uid")
         page = int(request.args.get("page", 1))
         per_page = int(request.args.get("per_page", 10))

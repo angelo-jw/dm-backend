@@ -1,4 +1,6 @@
 from datetime import datetime
+from google.cloud.firestore_v1.base_query import FieldFilter
+
 from app import db
 from app.models import Activity
 from app.controllers.user import users_collection
@@ -15,7 +17,7 @@ def create_activities(data: dict):
             created_time, "%Y-%m-%dT%H:%M:%S.%fZ"
         )
     else:
-        formatted_created_time = datetime.now().isoformat() + "Z"
+        formatted_created_time = datetime.now()
     activities = []
     user_id = data.get("user_id")
     user_ref = users_collection.document(user_id)
@@ -35,7 +37,9 @@ def get_activities(
     user_id: str, page: int = 1, per_page: int = 10, last_doc_id: str = None
 ):
     user_ref = users_collection.document(user_id)
-    query = activities_collection.where("user_ref", "==", user_ref).order_by(
+    query = activities_collection.where(
+        filter=FieldFilter("user_ref", "==", user_ref)
+    ).order_by(
         "created_time"
     )
     activities_list = _handle_pagination(
@@ -86,12 +90,14 @@ def get_all_activities_per_type(
 ):
     user_ref = users_collection.document(user_id)
     query = (
-        activities_collection.where("user_ref", "==", user_ref)
-        .where(
-            "created_time", ">=", start_date,
+        activities_collection.where(
+            filter=FieldFilter("user_ref", "==", user_ref)
         )
         .where(
-            "created_time", "<=", end_date or datetime.now()
+            filter=FieldFilter("created_time", ">=", start_date)
+        )
+        .where(
+            filter=FieldFilter("created_time", "<=", end_date or datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"))
         )
         .order_by("created_time")
     )
