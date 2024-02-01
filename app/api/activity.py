@@ -96,3 +96,28 @@ def delete_activity(activity_id):
         return response
     except Exception as e:
         return bad_request(str(e))
+
+
+@bp.route("/activity/get-all-activities-per-type", methods=["POST"])
+@validate
+def get_activities_per_type():
+    try:
+        data = request.get_json() or {}
+        user_id = request.user.get("uid")
+        page = int(request.args.get("page", 1))
+        per_page = int(request.args.get("per_page", 10))
+        last_doc_id = request.args.get("last_doc_id")
+        user_id = request.user.get("uid")
+        activities = activity_controller.get_all_activities_per_type(
+            user_id=user_id,
+            start_date=data.get("start_date"),
+            end_date=data.get("end_date"),
+            page=page,
+            per_page=per_page,
+            last_doc_id=last_doc_id
+        )
+        response = jsonify({"activities": activities})
+        response.status_code = 200
+        return response
+    except Exception as e:
+        return bad_request(str(e))

@@ -7,7 +7,7 @@ from google.cloud.firestore_v1.document import DocumentReference
 class Activity:
     user_ref: DocumentReference
     activity_type: str
-    created_time: datetime = datetime.utcnow()
+    created_time: datetime
 
     def __repr__(self):
         return "<Activity {}>".format(self.activity_type)
