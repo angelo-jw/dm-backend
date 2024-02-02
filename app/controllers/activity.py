@@ -18,29 +18,39 @@ def create_activities(data: dict):
         )
     else:
         formatted_created_time = datetime.now()
-    activities = []
     user_id = data.get("user_id")
     user_ref = users_collection.document(user_id)
-    for _ in range(quantity):
-        activity = Activity(
+    activity = Activity(
             user_ref=user_ref,
             activity_type=data.get("activity_type"),
             created_time=formatted_created_time,
-        )
-        activities_collection.add(activity.to_dict())
-        activity.user_ref = user_ref.path
-        activities.append(activity.to_dict())
-    return activities
+            quantity=quantity
+    )
+    activities_collection.add(activity.to_dict())
+    activity.user_ref = user_ref.path
+    return activity.to_dict()
 
 
 def get_activities(
-    user_id: str, page: int = 1, per_page: int = 10, last_doc_id: str = None
+    user_id: str,
+    start_date: str,
+    end_date: str,
+    page: int = 1,
+    per_page: int = 10,
+    last_doc_id: str = None,
 ):
     user_ref = users_collection.document(user_id)
-    query = activities_collection.where(
-        filter=FieldFilter("user_ref", "==", user_ref)
-    ).order_by(
-        "created_time"
+    query = (
+        activities_collection.where(
+            filter=FieldFilter("user_ref", "==", user_ref)
+        )
+        .where(
+            filter=FieldFilter("created_time", ">=", start_date)
+        )
+        .where(
+            filter=FieldFilter("created_time", "<=", end_date)
+        )
+        .order_by("created_time")
     )
     activities_list = _handle_pagination(
         query=query,
@@ -78,36 +88,6 @@ def delete_activity(activity_id: str):
     if not activity.to_dict():
         raise Exception("Activity not found")
     return activity.to_dict()
-
-
-def get_all_activities_per_type(
-    user_id: str,
-    start_date: str,
-    end_date: str,
-    page: int = 1,
-    per_page: int = 10,
-    last_doc_id: str = None,
-):
-    user_ref = users_collection.document(user_id)
-    query = (
-        activities_collection.where(
-            filter=FieldFilter("user_ref", "==", user_ref)
-        )
-        .where(
-            filter=FieldFilter("created_time", ">=", start_date)
-        )
-        .where(
-            filter=FieldFilter("created_time", "<=", end_date or datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"))
-        )
-        .order_by("created_time")
-    )
-    activities_list = _handle_pagination(
-        query=query,
-        page=page,
-        per_page=per_page,
-        last_doc_id=last_doc_id,
-    )
-    return activities_list
 
 
 def _handle_pagination(query, page, per_page, last_doc_id):

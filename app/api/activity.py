@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import jsonify, request
 
 from app.api import bp
@@ -59,8 +60,23 @@ def get_activities():
         page = int(request.args.get("page", 1))
         per_page = int(request.args.get("per_page", 10))
         last_doc_id = request.args.get("last_doc_id")
+        start_date = request.args.get("start_date")
+        raw_end_date = request.args.get("end_date")
+        if not raw_end_date:
+            end_date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        else:
+            date_obj = datetime.strptime(raw_end_date, "%Y-%m-%d")
+            end_of_day = date_obj.replace(hour=23, minute=59, second=59, microsecond=999999)
+            end_date = end_of_day.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+        if not start_date:
+            raise Exception("Missing required fields start_date")
         activities = activity_controller.get_activities(
-            user_id=user_id, page=page, per_page=per_page, last_doc_id=last_doc_id
+            user_id=user_id,
+            page=page,
+            per_page=per_page,
+            last_doc_id=last_doc_id,
+            start_date=start_date,
+            end_date=end_date
         )
         response = jsonify({"activities": activities})
         response.status_code = 200
@@ -92,33 +108,6 @@ def delete_activity(activity_id):
     try:
         activity_controller.delete_activity(activity_id=activity_id)
         response = jsonify({"message": "Activity deleted successfully"})
-        response.status_code = 200
-        return response
-    except Exception as e:
-        return bad_request(str(e))
-
-
-@bp.route("/activity/get-all-activities-per-type", methods=["POST"])
-@validate
-def get_activities_per_type():
-    try:
-        data = request.get_json() or {}
-        if not data.get("start_date"):
-            raise Exception("Missing required fields start_date")
-        user_id = request.user.get("uid")
-        page = int(request.args.get("page", 1))
-        per_page = int(request.args.get("per_page", 10))
-        last_doc_id = request.args.get("last_doc_id")
-        user_id = request.user.get("uid")
-        activities = activity_controller.get_all_activities_per_type(
-            user_id=user_id,
-            start_date=data.get("start_date"),
-            end_date=data.get("end_date"),
-            page=page,
-            per_page=per_page,
-            last_doc_id=last_doc_id
-        )
-        response = jsonify({"activities": activities})
         response.status_code = 200
         return response
     except Exception as e:
