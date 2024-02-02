@@ -1,3 +1,6 @@
+from datetime import datetime
+from google.cloud.firestore_v1.base_query import FieldFilter
+
 from app import db
 from app.models import Activity
 from app.controllers.user import users_collection
@@ -8,38 +11,53 @@ activities_collection = db.collection("activities")
 
 def create_activities(data: dict):
     quantity = int(data.get("quantity"))
-    activities = []
+    created_time = data.get("created_time")
+    if created_time:
+        formatted_created_time = datetime.strptime(
+            created_time, "%Y-%m-%dT%H:%M:%S.%fZ"
+        )
+    else:
+        formatted_created_time = datetime.now()
     user_id = data.get("user_id")
     user_ref = users_collection.document(user_id)
-    for _ in range(quantity):
-        activity = Activity(user_ref=user_ref, activity_type=data.get("activity_type"))
-        activities_collection.add(activity.to_dict())
-        activity.user_ref = user_ref.path
-        activities.append(activity.to_dict())
-    return activities
+    activity = Activity(
+            user_ref=user_ref,
+            activity_type=data.get("activity_type"),
+            created_time=formatted_created_time,
+            quantity=quantity
+    )
+    activities_collection.add(activity.to_dict())
+    activity.user_ref = user_ref.path
+    return activity.to_dict()
 
 
 def get_activities(
-    user_id: str, page: int = 1, per_page: int = 10, last_doc_id: str = None
+    user_id: str,
+    start_date: str,
+    end_date: str,
+    page: int = 1,
+    per_page: int = 10,
+    last_doc_id: str = None,
 ):
     user_ref = users_collection.document(user_id)
-    query = activities_collection.where("user_ref", "==", user_ref).order_by(
-        "created_time"
+    query = (
+        activities_collection.where(
+            filter=FieldFilter("user_ref", "==", user_ref)
+        )
+        .where(
+            filter=FieldFilter("created_time", ">=", start_date)
+        )
+        .where(
+            filter=FieldFilter("created_time", "<=", end_date)
+        )
+        .order_by("created_time")
     )
-    activities_list = []
-
-    if last_doc_id and page > 1:
-        last_doc = activities_collection.document(last_doc_id).get()
-        if not last_doc.exists:
-            raise Exception("Last document not found")
-        query = query.start_after(last_doc)
-
-    activities = query.limit(per_page).stream()
-    for activity in activities:
-        activity_dict = activity.to_dict()
-        activity_dict["user_ref"] = activity_dict["user_ref"].id
-        activity_dict["id"] = activity.id
-        activities_list.append(activity_dict)
+    activities_list = _handle_pagination(
+        query=query,
+        page=page,
+        per_page=per_page,
+        last_doc_id=last_doc_id,
+    )
 
     return activities_list
 
@@ -59,14 +77,27 @@ def update_activity(activity_id: str, data: dict):
         raise Exception("Cannot update id field")
     elif "user_id" in data:
         raise Exception("Cannot update user_id field")
-    activity = activities_collection.document(activity_id).update(data)
-    if not activity.to_dict():
-        raise Exception("Activity not found")
-    return activity.to_dict()
+    activities_collection.document(activity_id).update(data)
+    return "Activity updated successfully"
 
 
 def delete_activity(activity_id: str):
-    activity = activities_collection.document(activity_id).delete()
-    if not activity.to_dict():
-        raise Exception("Activity not found")
-    return activity.to_dict()
+    activities_collection.document(activity_id).delete()
+    return "Activity deleted successfully"
+
+
+def _handle_pagination(query, page, per_page, last_doc_id):
+    if last_doc_id and page > 1:
+        last_doc = activities_collection.document(last_doc_id).get()
+        if not last_doc.exists:
+            raise Exception("Last document not found")
+        query = query.start_after(last_doc)
+
+    activities = query.limit(per_page).stream()
+    activities_list = []
+    for activity in activities:
+        activity_dict = activity.to_dict()
+        activity_dict["user_ref"] = activity_dict["user_ref"].id
+        activity_dict["id"] = activity.id
+        activities_list.append(activity_dict)
+    return activities_list

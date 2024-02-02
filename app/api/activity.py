@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import jsonify, request
 
 from app.api import bp
@@ -59,8 +60,23 @@ def get_activities():
         page = int(request.args.get("page", 1))
         per_page = int(request.args.get("per_page", 10))
         last_doc_id = request.args.get("last_doc_id")
+        start_date = request.args.get("start_date")
+        raw_end_date = request.args.get("end_date")
+        if not raw_end_date:
+            end_date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        else:
+            date_obj = datetime.strptime(raw_end_date, "%Y-%m-%d")
+            end_of_day = date_obj.replace(hour=23, minute=59, second=59, microsecond=999999)
+            end_date = end_of_day.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+        if not start_date:
+            raise Exception("Missing required fields start_date")
         activities = activity_controller.get_activities(
-            user_id=user_id, page=page, per_page=per_page, last_doc_id=last_doc_id
+            user_id=user_id,
+            page=page,
+            per_page=per_page,
+            last_doc_id=last_doc_id,
+            start_date=start_date,
+            end_date=end_date
         )
         response = jsonify({"activities": activities})
         response.status_code = 200
@@ -74,11 +90,11 @@ def get_activities():
 def update_activity(activity_id):
     try:
         data = request.get_json() or {}
-        activity = activity_controller.update_activity(
+        message = activity_controller.update_activity(
             activity_id=activity_id, data=data
         )
         response = jsonify(
-            {"message": "Activity updated successfully", "activity": activity}
+            {"message": message}
         )
         response.status_code = 200
         return response
