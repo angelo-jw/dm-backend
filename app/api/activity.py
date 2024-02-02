@@ -90,11 +90,11 @@ def get_activities():
 def update_activity(activity_id):
     try:
         data = request.get_json() or {}
-        activity = activity_controller.update_activity(
+        message = activity_controller.update_activity(
             activity_id=activity_id, data=data
         )
         response = jsonify(
-            {"message": "Activity updated successfully", "activity": activity}
+            {"message": message}
         )
         response.status_code = 200
         return response

@@ -77,17 +77,13 @@ def update_activity(activity_id: str, data: dict):
         raise Exception("Cannot update id field")
     elif "user_id" in data:
         raise Exception("Cannot update user_id field")
-    activity = activities_collection.document(activity_id).update(data)
-    if not activity.to_dict():
-        raise Exception("Activity not found")
-    return activity.to_dict()
+    activities_collection.document(activity_id).update(data)
+    return "Activity updated successfully"
 
 
 def delete_activity(activity_id: str):
-    activity = activities_collection.document(activity_id).delete()
-    if not activity.to_dict():
-        raise Exception("Activity not found")
-    return activity.to_dict()
+    activities_collection.document(activity_id).delete()
+    return "Activity deleted successfully"
 
 
 def _handle_pagination(query, page, per_page, last_doc_id):
