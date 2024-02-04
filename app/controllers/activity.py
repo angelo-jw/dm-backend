@@ -1,9 +1,11 @@
 from datetime import datetime
+from collections import defaultdict
 from google.cloud.firestore_v1.base_query import FieldFilter
 
 from app import db
 from app.models import Activity
 from app.controllers.user import users_collection
+from app.utils.tools import parse_iso_datetime
 
 
 activities_collection = db.collection("activities")
@@ -41,15 +43,9 @@ def get_activities(
 ):
     user_ref = users_collection.document(user_id)
     query = (
-        activities_collection.where(
-            filter=FieldFilter("user_ref", "==", user_ref)
-        )
-        .where(
-            filter=FieldFilter("created_time", ">=", start_date)
-        )
-        .where(
-            filter=FieldFilter("created_time", "<=", end_date)
-        )
+        activities_collection.where(filter=FieldFilter("user_ref", "==", user_ref))
+        .where(filter=FieldFilter("created_time", ">=", start_date))
+        .where(filter=FieldFilter("created_time", "<=", end_date))
         .order_by("created_time")
     )
     activities_list = _handle_pagination(
@@ -101,3 +97,47 @@ def _handle_pagination(query, page, per_page, last_doc_id):
         activity_dict["id"] = activity.id
         activities_list.append(activity_dict)
     return activities_list
+
+
+def get_activity_count_by_date_range(user_id: str, start_date: str, end_date: str):
+    user_ref = users_collection.document(user_id)
+    query = (
+        activities_collection.where(filter=FieldFilter("user_ref", "==", user_ref))
+        .where(filter=FieldFilter("created_time", ">=", start_date))
+        .where(filter=FieldFilter("created_time", "<=", end_date))
+        .stream()
+    )
+    activities_by_date = defaultdict(lambda: defaultdict(int))
+    for activity in query:
+        activity_data = activity.to_dict()
+        created_datetime = parse_iso_datetime(activity_data["created_time"])
+        date_key = created_datetime.date().strftime("%Y-%m-%d")
+        activity_type = activity_data["activity_type"]
+        quantity = activity_data["quantity"]
+        activities_by_date[date_key][activity_type] += quantity
+    formatted_activities = {
+        date: dict(activities) for date, activities in activities_by_date.items()
+    }
+    return formatted_activities
+
+
+def get_activity_count_per_month(user_id: str, year: str):
+    user_ref = users_collection.document(user_id)
+    query = (
+        activities_collection.where(filter=FieldFilter("user_ref", "==", user_ref))
+        .where(filter=FieldFilter("created_time", ">=", f"{year}-01-01T00:00:00.000Z"))
+        .where(filter=FieldFilter("created_time", "<=", f"{year}-12-31T23:59:59.999Z"))
+        .stream()
+    )
+    activities_by_month = defaultdict(lambda: defaultdict(int))
+    for activity in query:
+        activity_data = activity.to_dict()
+        created_datetime = parse_iso_datetime(activity_data["created_time"])
+        month_key = created_datetime.strftime("%Y-%m")
+        activity_type = activity_data["activity_type"]
+        quantity = activity_data["quantity"]
+        activities_by_month[month_key][activity_type] += quantity
+    formatted_activities = {
+        month: dict(activities) for month, activities in activities_by_month.items()
+    }
+    return formatted_activities
