@@ -71,7 +71,7 @@ def get_activity(activity_id: str):
 def update_activity(activity_id: str, data: dict):
     if "id" in data:
         raise Exception("Cannot update id field")
-    elif "user_id" in data:
+    if "user_id" in data:
         raise Exception("Cannot update user_id field")
     activities_collection.document(activity_id).update(data)
     return "Activity updated successfully"
