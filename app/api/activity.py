@@ -4,6 +4,7 @@ from flask import jsonify, request
 from app.api import bp
 from app.api.auth import validate
 from app.utils.errors import bad_request, not_found
+from app.utils.tools import get_end_of_day
 from app.controllers import activity as activity_controller
 
 
@@ -65,9 +66,7 @@ def get_activities():
         if not raw_end_date:
             end_date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         else:
-            date_obj = datetime.strptime(raw_end_date, "%Y-%m-%d")
-            end_of_day = date_obj.replace(hour=23, minute=59, second=59, microsecond=999999)
-            end_date = end_of_day.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+            end_date = get_end_of_day(raw_end_date)
         if not start_date:
             raise Exception("Missing required fields start_date")
         activities = activity_controller.get_activities(
