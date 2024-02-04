@@ -42,6 +42,8 @@ def get_payments():
     try:
         user_id = request.user.get("uid")
         start_date = request.args.get("start_date")
+        if not start_date:
+            raise Exception("Missing required fields start_date")
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get("per_page", 10, type=int)
         last_doc_id = request.args.get("last_doc_id")
@@ -50,8 +52,6 @@ def get_payments():
             end_date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         else:
             end_date = get_end_of_day(raw_end_date)
-        if not start_date:
-            raise Exception("Missing required fields start_date")
         payments_list = payment_controller.get_payments(
             user_id=user_id,
             start_date=start_date,
@@ -72,11 +72,11 @@ def get_payments():
 def update_payment(payment_id):
     try:
         data = request.get_json() or {}
-        payment = payment_controller.update_payment(
+        response = payment_controller.update_payment(
             payment_id=payment_id, data=data
         )
         response = jsonify(
-            {"payment": payment}
+            {"message": response}
         )
         response.status_code = 200
         return response
