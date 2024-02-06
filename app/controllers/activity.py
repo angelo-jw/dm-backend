@@ -107,17 +107,13 @@ def get_activity_count_by_date_range(user_id: str, start_date: str, end_date: st
         .where(filter=FieldFilter("created_time", "<=", end_date))
         .stream()
     )
-    activities_by_date = defaultdict(lambda: defaultdict(int))
+    activities_by_date = defaultdict(int)
     for activity in query:
         activity_data = activity.to_dict()
-        created_datetime = parse_iso_datetime(activity_data["created_time"])
-        date_key = created_datetime.date().strftime("%Y-%m-%d")
         activity_type = activity_data["activity_type"]
         quantity = activity_data["quantity"]
-        activities_by_date[date_key][activity_type] += quantity
-    formatted_activities = {
-        date: dict(activities) for date, activities in activities_by_date.items()
-    }
+        activities_by_date[activity_type] += quantity
+    formatted_activities = dict(activities_by_date)
     return formatted_activities
 
 
