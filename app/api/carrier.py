@@ -42,24 +42,8 @@ def get_carrier(carrier_id):
 def get_carriers():
     try:
         user_id = request.user.get("uid")
-        start_date = request.args.get("start_date")
-        if not start_date:
-            raise Exception("Missing required fields start_date")
-        page = request.args.get("page", 1, type=int)
-        per_page = request.args.get("per_page", 10, type=int)
-        last_doc_id = request.args.get("last_doc_id")
-        raw_end_date = request.args.get("end_date")
-        if not raw_end_date:
-            end_date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        else:
-            end_date = get_end_of_day(raw_end_date)
         carriers_list = carrier_controller.get_carriers(
-            user_id=user_id,
-            start_date=start_date,
-            end_date=end_date,
-            page=page,
-            per_page=per_page,
-            last_doc_id=last_doc_id,
+            user_id=user_id
         )
         response = jsonify({"carriers": carriers_list})
         response.status_code = 200
