@@ -10,14 +10,20 @@ payment_colletion = db.collection("payments")
 
 
 def create_payment(data: dict):
-    created_time = datetime.now()
+    created_time = data.get("created_time")
+    if created_time:
+        formatted_created_time = datetime.strptime(
+            created_time, "%Y-%m-%dT%H:%M:%S.%fZ"
+        )
+    else:
+        formatted_created_time = datetime.now()
     user_id = data.get("user_id")
     user_ref = users_collection.document(user_id)
     carrier_ref = carriers_collection.document(data.get("carrier_id"))
     payment = Payment(
         user_ref=user_ref,
         amount=data.get("amount"),
-        created_time=created_time,
+        created_time=formatted_created_time,
         carrier_ref=carrier_ref,
         door_knock_commission=data.get("door_knock_commission"),
     )
