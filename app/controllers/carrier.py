@@ -55,7 +55,12 @@ def get_carriers(
         carriers_collection.where("user_ref", "==", user_ref)
         .order_by("created_time")
     )
-    carriers_list = [doc.to_dict() for doc in query.stream()]
+    carriers_list = []
+    for carrier in query.stream():
+        carrier_dict = carrier.to_dict()
+        carrier_dict["user_ref"] = carrier_dict["user_ref"].id
+        carrier_dict["id"] = carrier.id
+        carriers_list.append(carrier_dict)
     return carriers_list
 
 
