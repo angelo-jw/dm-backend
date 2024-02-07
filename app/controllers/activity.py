@@ -15,8 +15,15 @@ def create_activities(data: dict):
     quantity = int(data.get("quantity"))
     created_time = data.get("created_time")
     if created_time:
-        formatted_created_time = datetime.strptime(
-            created_time, "%Y-%m-%dT%H:%M:%S.%fZ"
+        date_obj = datetime.strptime(
+            created_time, "%Y-%m-%d"
+        )
+        current_time = datetime.now()
+        formatted_created_time = date_obj.replace(
+            hour=current_time.hour,
+            minute=current_time.minute,
+            second=current_time.second,
+            microsecond=current_time.microsecond,
         )
     else:
         formatted_created_time = datetime.now()
