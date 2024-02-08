@@ -118,7 +118,7 @@ def get_activity_count_by_date_range(user_id: str, start_date: str, end_date: st
     for activity in query:
         activity_data = activity.to_dict()
         activity_type = activity_data["activity_type"]
-        quantity = activity_data["quantity"]
+        quantity = int(activity_data["quantity"])
         activities_by_date[activity_type] += quantity
     formatted_activities = dict(activities_by_date)
     return formatted_activities
@@ -138,7 +138,7 @@ def get_activity_count_per_month(user_id: str, year: str):
         created_datetime = parse_iso_datetime(activity_data["created_time"])
         month_key = created_datetime.strftime("%Y-%m")
         activity_type = activity_data["activity_type"]
-        quantity = activity_data["quantity"]
+        quantity = int(activity_data["quantity"])
         activities_by_month[month_key][activity_type] += quantity
     formatted_activities = {
         month: dict(activities) for month, activities in activities_by_month.items()
