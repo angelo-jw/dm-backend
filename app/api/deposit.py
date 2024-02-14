@@ -3,42 +3,42 @@ from flask import jsonify, request
 
 from app.api import bp
 from app.api.auth import validate
-from app.controllers import payment as payment_controller
+from app.controllers import deposit as deposit_controller
 from app.utils.tools import get_end_of_day
 from app.utils.errors import bad_request
 
 
-@bp.route("/payment", methods=["POST"])
+@bp.route("/deposit", methods=["POST"])
 @validate
-def create_payment():
+def create_deposit():
     try:
         data = request.get_json() or {}
         user_id = request.user.get("uid")
         data["user_id"] = user_id
-        _check_payment_data(data)
-        payment_controller.create_payment(data=data)
-        response = jsonify({"message": "Payment created successfully"})
+        _check_deposit_data(data)
+        deposit_controller.create_deposit(data=data)
+        response = jsonify({"message": "Deposit created successfully"})
         response.status_code = 201
         return response
     except Exception as e:
         return bad_request(str(e))
 
 
-@bp.route("/payment/<payment_id>", methods=["GET"])
+@bp.route("/deposit/<deposit_id>", methods=["GET"])
 @validate
-def get_payment(payment_id):
+def get_deposit(deposit_id):
     try:
-        payment = payment_controller.get_payment(payment_id=payment_id)
-        response = jsonify({"payment": payment})
+        deposit = deposit_controller.get_deposit(deposit_id=deposit_id)
+        response = jsonify({"deposit": deposit})
         response.status_code = 200
         return response
     except Exception as e:
         return bad_request(str(e))
 
 
-@bp.route("/payment", methods=["GET"])
+@bp.route("/deposit", methods=["GET"])
 @validate
-def get_payments():
+def get_deposits():
     try:
         user_id = request.user.get("uid")
         start_date = request.args.get("start_date")
@@ -52,7 +52,7 @@ def get_payments():
             end_date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         else:
             end_date = get_end_of_day(raw_end_date)
-        payments_list = payment_controller.get_payments(
+        deposits_list = deposit_controller.get_deposits(
             user_id=user_id,
             start_date=start_date,
             end_date=end_date,
@@ -60,20 +60,20 @@ def get_payments():
             per_page=per_page,
             last_doc_id=last_doc_id,
         )
-        response = jsonify({"payments": payments_list})
+        response = jsonify({"deposits": deposits_list})
         response.status_code = 200
         return response
     except Exception as e:
         return bad_request(str(e))
 
 
-@bp.route("/payment/<payment_id>", methods=["PUT"])
+@bp.route("/deposit/<deposit_id>", methods=["PUT"])
 @validate
-def update_payment(payment_id):
+def update_deposit(deposit_id):
     try:
         data = request.get_json() or {}
-        response = payment_controller.update_payment(
-            payment_id=payment_id, data=data
+        response = deposit_controller.update_deposit(
+            deposit_id=deposit_id, data=data
         )
         response = jsonify(
             {"message": response}
@@ -84,19 +84,19 @@ def update_payment(payment_id):
         return bad_request(str(e))
 
 
-@bp.route("/payment/<payment_id>", methods=["DELETE"])
+@bp.route("/deposit/<deposit_id>", methods=["DELETE"])
 @validate
-def delete_payment(payment_id):
+def delete_deposit(deposit_id):
     try:
-        payment_controller.delete_payment(payment_id=payment_id)
-        response = jsonify({"message": "Payment deleted successfully"})
+        deposit_controller.delete_deposit(deposit_id=deposit_id)
+        response = jsonify({"message": "Deposit deleted successfully"})
         response.status_code = 200
         return response
     except Exception as e:
         return bad_request(str(e))
 
 
-def _check_payment_data(data: dict):
+def _check_deposit_data(data: dict):
     required_fields = ["amount", "carrier_id", "door_knock_commission"]
     for field in required_fields:
         if field not in data:

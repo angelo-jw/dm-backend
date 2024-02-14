@@ -4,7 +4,7 @@ from google.cloud.firestore_v1.document import DocumentReference
 
 
 @dataclass()
-class Payment:
+class Deposit:
     user_ref: DocumentReference
     created_time: datetime
     amount: float
@@ -13,7 +13,7 @@ class Payment:
     door_knock_commission: bool
 
     def __repr__(self):
-        return "<Payment {}>".format(self.amount)
+        return "<Deposit {}>".format(self.amount)
 
     def to_dict(self) -> dict:
         data = {

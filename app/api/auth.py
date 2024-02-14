@@ -12,9 +12,9 @@ def login():
     try:
         data = request.get_json() or {}
         _check_user_data(data)
-        user_token = user_controller.login(data=data)
+        user_info = user_controller.login(data=data)
         response = jsonify(
-            {"message": "User logged in successfully", "token": user_token}
+            {"message": "User logged in successfully", "token": user_info["id_token"], "name": user_info["name"]}
         )
         response.status_code = 200
         return response

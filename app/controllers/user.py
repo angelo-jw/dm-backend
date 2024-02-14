@@ -45,7 +45,12 @@ def login(data: dict):
     }
     response = requests.post(url, json=payload)
     _raise_detailed_error(response)
-    return response.json().get('idToken')
+    id_token = response.json().get('idToken')
+    data = {
+        "id_token": id_token,
+        "name": _get_user_info_from_id_token(id_token).get('name')
+    }
+    return data
 
 
 def _raise_detailed_error(request_object):
@@ -55,3 +60,8 @@ def _raise_detailed_error(request_object):
         text = request_object.text.find("{")
         parsed_text = json.loads(request_object.text[text:])
         raise requests.HTTPError(parsed_text.get('error').get('message'))
+
+
+def _get_user_info_from_id_token(id_token):
+    decoded_token = auth.verify_id_token(id_token)
+    return decoded_token
