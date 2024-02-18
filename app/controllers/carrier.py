@@ -17,7 +17,7 @@ def create_carriers(data: dict):
     user_id = data.get("user_id")
     user_ref = users_collection.document(user_id)
     carrier_name = data.get("carrier_name")
-    _carrier_exists = get_carrier_by_name(carrier_name)
+    _carrier_exists = get_carrier_by_name(carrier_name, user_ref=user_ref)
     if _carrier_exists:
         message = "Carrier already exists"
         raise CarrierAlreadyExistError(message)
@@ -32,8 +32,10 @@ def create_carriers(data: dict):
     return carrier.to_dict()
 
 
-def get_carrier_by_name(carrier_name: str):
-    carrier = carriers_collection.where("carrier_name", "==", carrier_name).stream()
+def get_carrier_by_name(carrier_name: str, user_ref: str):
+    carrier = carriers_collection.where("carrier_name", "==", carrier_name).where(
+        "user_ref", "==", user_ref
+    ).stream()
     return [doc.to_dict() for doc in carrier]
 
 

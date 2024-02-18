@@ -1,11 +1,9 @@
-from datetime import datetime
 from flask import jsonify, request
 
 from app.api import bp
 from app.api.auth import validate
 from app.controllers import carrier as carrier_controller
 from app.utils.errors import bad_request
-from app.utils.tools import get_end_of_day
 
 
 @bp.route("/carrier", methods=["POST"])
