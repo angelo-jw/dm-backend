@@ -4,6 +4,7 @@ from app import db
 from app.models import Deposit
 from app.controllers.user import users_collection
 from app.controllers.carrier import carriers_collection, get_carrier
+from app.utils.tools import parse_iso_datetime
 
 
 deposit_colletion = db.collection("deposits")
@@ -110,3 +111,25 @@ def update_deposit(deposit_id: str, data: dict):
 def delete_deposit(deposit_id: str):
     deposit_colletion.document(deposit_id).delete()
     return "Deposit deleted successfully"
+
+
+def get_sales_by_weekday(user_id: str, start_date: str, end_date: str):
+    user_ref = users_collection.document(user_id)
+    query = deposit_colletion.where("user_ref", "==", user_ref).where("created_time", ">=", start_date).where("created_time", "<=", end_date)
+    deposits = query.stream()
+    sales_by_weekday = {
+        "Monday": 0,
+        "Tuesday": 0,
+        "Wednesday": 0,
+        "Thursday": 0,
+        "Friday": 0,
+        "Saturday": 0,
+        "Sunday": 0,
+    }
+    for deposit in deposits:
+        deposit_dict = deposit.to_dict()
+        created_time = deposit_dict.get("created_time")
+        parsed_created_time = parse_iso_datetime(created_time)
+        weekday = parsed_created_time.strftime("%A")
+        sales_by_weekday[weekday] += int(deposit_dict.get("amount"))
+    return sales_by_weekday
