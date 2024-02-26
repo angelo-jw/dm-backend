@@ -14,7 +14,12 @@ def login():
         _check_user_data(data)
         user_info = user_controller.login(data=data)
         response = jsonify(
-            {"message": "User logged in successfully", "token": user_info["id_token"], "name": user_info["name"]}
+            {
+                "message": "User logged in successfully",
+                "token": user_info["id_token"],
+                "refresh_token": user_info['refresh_token'],
+                "name": user_info["name"]
+            }
         )
         response.status_code = 200
         return response
@@ -32,6 +37,22 @@ def _check_user_data(data):
         if field not in data:
             raise Exception(f"Missing required field {field}")
     return None
+
+
+@bp.route("auth/refresh-token", methods=["POST"])
+def refresh_token():
+    try:
+        data = request.get_json() or {}
+        user_info = user_controller.refresh_token(data=data)
+        response = jsonify(
+            {"message": "Token refreshed successfully", "token": user_info["id_token"], "name": user_info["name"]}
+        )
+        response.status_code = 200
+        return response
+    except Exception as e:
+        if "INVALID_REFRESH_TOKEN" in str(e):
+            return unauthorized("Invalid refresh token")
+        return forbidden(str(e))
 
 
 def validate(f):

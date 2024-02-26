@@ -46,8 +46,10 @@ def login(data: dict):
     response = requests.post(url, json=payload)
     _raise_detailed_error(response)
     id_token = response.json().get('idToken')
+    refresh_token = response.json().get('refreshToken')
     data = {
         "id_token": id_token,
+        "refresh_token": refresh_token,
         "name": _get_user_info_from_id_token(id_token).get('name')
     }
     return data
@@ -65,3 +67,19 @@ def _raise_detailed_error(request_object):
 def _get_user_info_from_id_token(id_token):
     decoded_token = auth.verify_id_token(id_token)
     return decoded_token
+
+
+def refresh_token(data: dict):
+    url = endpoints.GOOGLE_SECURE_TOKEN_URL + 'token?key=' + constants.API_KEY
+    payload = {
+        "grant_type": "refresh_token",
+        "refresh_token": data.get('refresh_token')
+    }
+    response = requests.post(url, json=payload)
+    _raise_detailed_error(response)
+    id_token = response.json().get('id_token')
+    data = {
+        "id_token": id_token,
+        "name": _get_user_info_from_id_token(id_token).get('name')
+    }
+    return data
