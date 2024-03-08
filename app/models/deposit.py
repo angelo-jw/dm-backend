@@ -1,14 +1,12 @@
 from dataclasses import dataclass
-from datetime import datetime
-from google.cloud.firestore_v1.document import DocumentReference
+from google.cloud.firestore_v1.document import DocumentReference, Timestamp
 
 
 @dataclass()
 class Deposit:
     user_ref: DocumentReference
-    created_time: datetime
     amount: float
-    created_time: datetime
+    created_time: Timestamp
     carrier_ref: DocumentReference
     door_knock_commission: bool
 
@@ -19,7 +17,7 @@ class Deposit:
         data = {
             "user_ref": self.user_ref,
             "amount": self.amount,
-            "created_time": self.created_time.isoformat() + "Z",
+            "created_time": self.created_time,
             "carrier_ref": self.carrier_ref,
             "door_knock_commission": self.door_knock_commission,
         }

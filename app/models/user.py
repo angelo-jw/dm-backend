@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Optional
+import datetime
+from google.cloud.firestore_v1.document import Timestamp
 
 
 @dataclass
@@ -9,7 +9,7 @@ class User:
     last_name: str
     email: str
     state: str
-    created_time: datetime = datetime.utcnow()
+    created_time: Timestamp = datetime.datetime.now(tz=datetime.timezone.utc).replace(tzinfo=None)
 
     def __repr__(self):
         return '<User {}>'.format(self.full_name)
@@ -20,7 +20,7 @@ class User:
             'last_name': self.last_name,
             'email': self.email,
             'state': self.state,
-            'created_time': self.created_time.isoformat() + 'Z'
+            'created_time': self.created_time
         }
         if include_email:
             data['email'] = self.email

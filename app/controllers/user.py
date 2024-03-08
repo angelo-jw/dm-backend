@@ -17,23 +17,20 @@ def create_user(data: dict):
         email=data.get('email'),
         state=data.get('state'),
     )
-    user_cred = _handle_user_credentials(
-        email=user.email,
-        password=data.get('password'),
-        full_name=user.full_name
+    user_cred = auth.create_user(
+            email=user.email,
+            password=data.get('password'),
+            display_name=user.full_name,
     )
     user.id = user_cred.uid
-    users_collection.document(user.id).set(user.to_dict())
+    try:
+        from app.controllers.activity_type import create_default_activity_types
+        users_collection.document(user.id).set(user.to_dict())
+        create_default_activity_types(user.id)
+    except Exception:
+        auth.delete_user(user_cred.uid)
+        raise Exception("User creation failed")
     return user.to_dict()
-
-
-def _handle_user_credentials(email, password, full_name):
-    user_cred = auth.create_user(
-            email=email,
-            password=password,
-            display_name=full_name,
-    )
-    return user_cred
 
 
 def login(data: dict):

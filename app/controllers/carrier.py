@@ -13,7 +13,7 @@ class CarrierAlreadyExistError(Exception):
 
 
 def create_carriers(data: dict):
-    created_time = datetime.now()
+    created_time = datetime.utcnow()
     user_id = data.get("user_id")
     user_ref = users_collection.document(user_id)
     carrier_name = data.get("carrier_name")

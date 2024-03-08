@@ -1,13 +1,12 @@
 from dataclasses import dataclass
-from datetime import datetime
-from google.cloud.firestore_v1.document import DocumentReference
+from google.cloud.firestore_v1.document import DocumentReference, Timestamp
 
 
 @dataclass()
 class Activity:
     user_ref: DocumentReference
     activity_type: str
-    created_time: datetime
+    created_time: Timestamp
     quantity: int
 
     def __repr__(self):
@@ -17,7 +16,7 @@ class Activity:
         data = {
             'user_ref': self.user_ref,
             'activity_type': self.activity_type,
-            'created_time': self.created_time.isoformat() + 'Z',
+            'created_time': self.created_time,
             'quantity': self.quantity
         }
         return data

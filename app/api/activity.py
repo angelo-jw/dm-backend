@@ -1,11 +1,10 @@
-from datetime import datetime
 from flask import jsonify, request
 
 from app.api import bp
 from app.api.auth import validate
 from app.utils.errors import bad_request, not_found
-from app.utils.tools import get_end_of_day
 from app.controllers import activity as activity_controller
+from app.utils.tools import format_dates_for_api
 
 
 @bp.route("/activity", methods=["POST"])
@@ -58,17 +57,14 @@ def get_activity(activity_id):
 def get_activities():
     try:
         user_id = request.user.get("uid")
+        raw_start_date = request.args.get("start_date")
+        if not raw_start_date:
+            raise Exception("Missing required fields start_date")
         page = int(request.args.get("page", 1))
         per_page = int(request.args.get("per_page", 10))
         last_doc_id = request.args.get("last_doc_id")
-        start_date = request.args.get("start_date")
         raw_end_date = request.args.get("end_date")
-        if not raw_end_date:
-            end_date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        else:
-            end_date = get_end_of_day(raw_end_date)
-        if not start_date:
-            raise Exception("Missing required fields start_date")
+        start_date, end_date = format_dates_for_api(raw_start_date, raw_end_date)
         activities = activity_controller.get_activities(
             user_id=user_id,
             page=page,

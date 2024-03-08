@@ -1,10 +1,12 @@
 from datetime import datetime
+from google.cloud.firestore_v1.base_query import FieldFilter
+from google.api_core.datetime_helpers import DatetimeWithNanoseconds
 
 from app import db
 from app.models import Deposit
-from app.controllers.user import users_collection
+from app.controllers.activity import get_activity_count_by_date_range
 from app.controllers.carrier import carriers_collection, get_carrier
-from app.utils.tools import parse_iso_datetime
+from app.controllers.user import users_collection
 
 
 deposit_colletion = db.collection("deposits")
@@ -16,7 +18,7 @@ def create_deposit(data: dict):
         date_obj = datetime.strptime(
             created_time, "%Y-%m-%d"
         )
-        current_time = datetime.now()
+        current_time = datetime.utcnow()
         formatted_created_time = date_obj.replace(
             hour=current_time.hour,
             minute=current_time.minute,
@@ -24,13 +26,13 @@ def create_deposit(data: dict):
             microsecond=current_time.microsecond,
         )
     else:
-        formatted_created_time = datetime.now()
+        formatted_created_time = datetime.utcnow()
     user_id = data.get("user_id")
     user_ref = users_collection.document(user_id)
     carrier_ref = carriers_collection.document(data.get("carrier_id"))
     deposit = Deposit(
         user_ref=user_ref,
-        amount=data.get("amount"),
+        amount=float(data.get("amount")),
         created_time=formatted_created_time,
         carrier_ref=carrier_ref,
         door_knock_commission=data.get("door_knock_commission"),
@@ -61,10 +63,13 @@ def get_deposits(
     last_doc_id: str = None,
 ):
     user_ref = users_collection.document(user_id)
+    datetime_obj = DatetimeWithNanoseconds
+    start_date = datetime_obj.from_rfc3339(start_date)
+    end_date = datetime_obj.from_rfc3339(end_date)
     query = (
-        deposit_colletion.where("user_ref", "==", user_ref)
-        .where("created_time", ">=", start_date)
-        .where("created_time", "<=", end_date)
+        deposit_colletion.where(filter=FieldFilter("user_ref", "==", user_ref))
+        .where(filter=FieldFilter("created_time", ">=", start_date))
+        .where(filter=FieldFilter("created_time", "<=", end_date))
         .order_by("created_time")
     )
     deposits_list = _handle_pagination(
@@ -115,7 +120,14 @@ def delete_deposit(deposit_id: str):
 
 def get_sales_by_weekday(user_id: str, start_date: str, end_date: str):
     user_ref = users_collection.document(user_id)
-    query = deposit_colletion.where("user_ref", "==", user_ref).where("created_time", ">=", start_date).where("created_time", "<=", end_date)
+    datetime_obj = DatetimeWithNanoseconds
+    start_date = datetime_obj.from_rfc3339(start_date)
+    end_date = datetime_obj.from_rfc3339(end_date)
+    query = (
+        deposit_colletion.where(filter=FieldFilter("user_ref", "==", user_ref))
+        .where(filter=FieldFilter("created_time", ">=", start_date))
+        .where(filter=FieldFilter("created_time", "<=", end_date))
+    )
     deposits = query.stream()
     sales_by_weekday = {
         "Monday": 0,
@@ -129,7 +141,38 @@ def get_sales_by_weekday(user_id: str, start_date: str, end_date: str):
     for deposit in deposits:
         deposit_dict = deposit.to_dict()
         created_time = deposit_dict.get("created_time")
-        parsed_created_time = parse_iso_datetime(created_time)
-        weekday = parsed_created_time.strftime("%A")
+        weekday = created_time.strftime("%A")
         sales_by_weekday[weekday] += int(deposit_dict.get("amount"))
     return sales_by_weekday
+
+
+def get_sales_per_activity(user_id: str, start_date: str, end_date: str):
+    user_ref = users_collection.document(user_id)
+    activity_counts = get_activity_count_by_date_range(start_date=start_date, end_date=end_date, user_id=user_id)
+    datetime_obj = DatetimeWithNanoseconds
+    start_date = datetime_obj.from_rfc3339(start_date)
+    end_date = datetime_obj.from_rfc3339(end_date)
+    query = (
+        deposit_colletion.where(filter=FieldFilter("user_ref", "==", user_ref))
+        .where(filter=FieldFilter("created_time", ">=", start_date))
+        .where(filter=FieldFilter("created_time", "<=", end_date))
+    )
+    deposits = query.stream()
+    total_deposits = sum(deposit.to_dict()['amount'] for deposit in deposits)
+    door_knock_commission_total = 0
+
+    for deposit in deposits:
+        deposit_data = deposit.to_dict()
+        total_deposits += deposit_data['amount']
+        if deposit_data.get('door_knock_commission'):
+            door_knock_commission_total += deposit_data['amount']
+
+    sales_per_activity_type = {}
+    for activity_type, count in activity_counts.items():
+        if count > 0:
+            if activity_type == "DoorKnocks":
+                sales_per_activity_type[activity_type] = round(door_knock_commission_total / count, 2)
+            else:
+                sales_per_activity_type[activity_type] = round(total_deposits / count, 2)
+
+    return sales_per_activity_type

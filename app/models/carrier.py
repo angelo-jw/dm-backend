@@ -1,13 +1,12 @@
 from dataclasses import dataclass
-from datetime import datetime
-from google.cloud.firestore_v1.document import DocumentReference
+from google.cloud.firestore_v1.document import DocumentReference, Timestamp
 
 
 @dataclass()
 class Carrier:
     user_ref: DocumentReference
     carrier_name: str
-    created_time: datetime
+    created_time: Timestamp
     notes: str
 
     def __repr__(self):
@@ -17,7 +16,7 @@ class Carrier:
         data = {
             'user_ref': self.user_ref,
             'carrier_name': self.carrier_name,
-            'created_time': self.created_time.isoformat() + 'Z',
+            'created_time': self.created_time,
             'notes': self.notes
         }
         return data

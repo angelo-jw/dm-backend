@@ -12,6 +12,9 @@ def create_activity_types(data: dict):
     duration = int(data.get("duration"))
     user_id = data.get("user_id")
     user_ref = users_collection.document(user_id)
+    _activity_type_exists = _get_activity_type_by_name(data.get("name"), user_ref)
+    if any(_activity_type_exists):
+        raise Exception("Activity Type already exists")
     activity_type = ActivityType(
             user_ref=user_ref,
             name=data.get("name"),
@@ -62,3 +65,31 @@ def update_activity_type(activity_type_id: str, data: dict):
 def delete_activity_type(activity_type_id: str):
     activity_type_collection.document(activity_type_id).delete()
     return "activity_type deleted successfully"
+
+
+def _get_activity_type_by_name(name: str, user_ref):
+    query = (
+        activity_type_collection.where(filter=FieldFilter("name", "==", name))
+        .where(filter=FieldFilter("user_ref", "==", user_ref))
+    )
+    activity_type = query.stream()
+    return activity_type
+
+
+def create_default_activity_types(user_id: str):
+    user_ref = users_collection.document(user_id)
+    default_activity_types = [
+        {"name": "Dials", "duration": 1},
+        {"name": "Presentation", "duration": 120},
+        {"name": "Recruiting Interview", "duration": 20},
+        {"name": "Doorknock", "duration": 5},
+        {"name": "Appointment", "duration": 0}
+    ]
+    for activity_type in default_activity_types:
+        activity_type = ActivityType(
+                user_ref=user_ref,
+                name=activity_type["name"],
+                duration=activity_type["duration"]
+        )
+        activity_type_collection.add(activity_type.to_dict())
+    return "Default activity types created successfully"

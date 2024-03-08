@@ -1,10 +1,9 @@
-from datetime import datetime
 from flask import jsonify, request
 
 from app.api import bp
 from app.api.auth import validate
 from app.controllers import deposit as deposit_controller
-from app.utils.tools import get_end_of_day
+from app.utils.tools import format_dates_for_api
 from app.utils.errors import bad_request
 
 
@@ -41,17 +40,14 @@ def get_deposit(deposit_id):
 def get_deposits():
     try:
         user_id = request.user.get("uid")
-        start_date = request.args.get("start_date")
-        if not start_date:
+        raw_start_date = request.args.get("start_date")
+        if not raw_start_date:
             raise Exception("Missing required fields start_date")
-        page = request.args.get("page", 1, type=int)
-        per_page = request.args.get("per_page", 10, type=int)
+        page = int(request.args.get("page", 1))
+        per_page = int(request.args.get("per_page", 10))
         last_doc_id = request.args.get("last_doc_id")
         raw_end_date = request.args.get("end_date")
-        if not raw_end_date:
-            end_date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        else:
-            end_date = get_end_of_day(raw_end_date)
+        start_date, end_date = format_dates_for_api(raw_start_date, raw_end_date)
         deposits_list = deposit_controller.get_deposits(
             user_id=user_id,
             start_date=start_date,
