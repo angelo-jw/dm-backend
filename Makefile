@@ -1,14 +1,13 @@
 .PHONY: build docker_tag
 build: ## Create docker image with dependencies needed for development.
-	docker-compose build --build-arg COMMIT_HASH=$(git rev-parse HEAD)
-
+	docker compose build --build-arg COMMIT_HASH=$(git rev-parse HEAD)
 .PHONY: run
 run:
-	docker-compose --env-file=.env up -d
+	docker compose --env-file=.env up -d
 
 .PHONY: stop
 stop:
-	docker-compose stop
+	docker compose stop
 
 .PHONY: restart
 restart: stop build run
