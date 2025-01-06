@@ -9,3 +9,7 @@ services:
       - 9091:9091 # Firebase Authentication
       - 8081:8081 # Cloud Firestore
       - 4001:4001 # Emulator Suite UI
+    volumes:
+      - ./emulator/firestore.rules:/app/firestore.rules
+      - ./emulator/firestore.indexes.json:/app/firestore.indexes.json
+      - ./emulator:/app/emulator
