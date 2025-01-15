@@ -76,5 +76,11 @@ def update_carrier(carrier_id: str, data: dict):
 
 
 def delete_carrier(carrier_id: str):
+    deposits_collection = db.collection("deposits")
+    carrier_deposits = deposits_collection.where(
+        "carrier_ref", "==", carriers_collection.document(carrier_id),
+    ).limit(1)
+    if [deposit for deposit in carrier_deposits.stream()]:
+        raise Exception("Cannot delete carrier with existing deposits")
     carriers_collection.document(carrier_id).delete()
     return "Carrier deleted successfully"
