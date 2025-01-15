@@ -27,8 +27,9 @@ def create_user(data: dict):
         from app.controllers.activity_type import create_default_activity_types
         users_collection.document(user.id).set(user.to_dict())
         create_default_activity_types(user.id)
-    except Exception:
+    except Exception as e:
         auth.delete_user(user_cred.uid)
+        print(e)
         raise Exception("User creation failed")
     return user.to_dict()
 
