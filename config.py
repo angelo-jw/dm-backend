@@ -16,3 +16,4 @@ class Config(object):
     IDENTITY_TOOLKIT_URL = os.environ.get("IDENTITY_TOOLKIT_URL")
     API_KEY = os.environ.get("API_KEY")
     GOOGLE_SECURE_TOKEN_URL = os.environ.get("GOOGLE_SECURE_TOKEN_URL")
+    ENVIRONMENT = os.environ.get("ENVIRONMENT")

@@ -1,3 +1,4 @@
+import logging
 import json
 import requests
 from firebase_admin import auth
@@ -8,6 +9,7 @@ from app.utils import endpoints, constants
 
 
 users_collection = db.collection('users')
+logger = logging.getLogger(__name__)
 
 
 def create_user(data: dict):
@@ -81,3 +83,19 @@ def refresh_token(data: dict):
         "name": _get_user_info_from_id_token(id_token).get('name')
     }
     return data
+
+
+def reset_password(email: str):
+    try:
+        link = auth.generate_password_reset_link(email)
+        if constants.ENVIRONMENT == 'development':
+            return {
+                "message": "Password reset link generated (DEV MODE)",
+                "reset_link": link,
+                "instructions": "To complete reset, add &newPassword=YOUR_NEW_PASSWORD to this URL"
+            }
+        else:
+            return {"message": "Password reset email sent successfully"}
+    except Exception as e:
+        logger.error(f"Password reset error: {str(e)}")
+        raise

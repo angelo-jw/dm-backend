@@ -10,6 +10,7 @@ services:
       - 8081:8081 # Cloud Firestore
       - 4001:4001 # Emulator Suite UI
     volumes:
+      - ./emulator/firebase.json:/app/firebase.json
       - ./emulator/firestore.rules:/app/firestore.rules
       - ./emulator/firestore.indexes.json:/app/firestore.indexes.json
-      - ./emulator:/app/emulator
+      - ./emulator/.firebaserc:/app/.firebaserc

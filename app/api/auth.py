@@ -68,3 +68,18 @@ def validate(f):
         return f(*args, **kwargs)
 
     return wrap
+
+
+@bp.route("auth/reset-password", methods=["POST"])
+def reset_password():
+    try:
+        data = request.get_json() or {}
+        email = data.get("email")
+        if not email:
+            raise Exception("Missing required field email")
+        response = user_controller.reset_password(email=email)
+        response = jsonify(response)
+        response.status_code = 200
+        return response
+    except Exception as e:
+        return forbidden(str(e))
