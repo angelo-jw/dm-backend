@@ -17,3 +17,6 @@ class Config(object):
     API_KEY = os.environ.get("API_KEY")
     GOOGLE_SECURE_TOKEN_URL = os.environ.get("GOOGLE_SECURE_TOKEN_URL")
     ENVIRONMENT = os.environ.get("ENVIRONMENT")
+    FROM_EMAIL_ADDRESS = "domore@johnwetmore.com"
+    MAILGUN_API_KEY = os.environ.get("MAILGUN_API_KEY")
+    FRONTEND_URL = os.environ.get("FRONTEND_URL")

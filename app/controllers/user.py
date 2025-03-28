@@ -86,16 +86,55 @@ def refresh_token(data: dict):
 
 
 def reset_password(email: str):
+    import re
+    from app.utils.emails import send_password_reset_email
     try:
-        link = auth.generate_password_reset_link(email)
-        if constants.ENVIRONMENT == 'development':
-            return {
-                "message": "Password reset link generated (DEV MODE)",
-                "reset_link": link,
-                "instructions": "To complete reset, add &newPassword=YOUR_NEW_PASSWORD to this URL"
-            }
-        else:
+        full_reset_link = auth.generate_password_reset_link(email)
+
+        oob_match = re.search(r'oobCode=([^&]+)', full_reset_link)
+        if oob_match:
+            oob_code = oob_match.group(1)
+            send_password_reset_email(email, oob_code)
+
+            if constants.ENVIRONMENT == 'development':
+                return {
+                    "message": "Password reset email sent",
+                    "oob_code": oob_code,
+                }
             return {"message": "Password reset email sent successfully"}
     except Exception as e:
         logger.error(f"Password reset error: {str(e)}")
+        raise Exception("Error sending password reset email")
+
+
+def verify_reset_token(token: str):
+    try:
+
+        url = f"{endpoints.IDENTITY_TOOLKIT}accounts:resetPassword?key={constants.API_KEY}"
+        payload = {"oobCode": token}
+
+        response = requests.post(url, json=payload)
+
+        if response.status_code == 200:
+            return {"valid": True}
+        else:
+            return {"valid": False, "reason": "Invalid or expired token"}
+    except Exception as e:
+        logger.error(f"Token verification error: {str(e)}")
+        return {"valid": False, "reason": str(e)}
+
+
+def complete_reset_password(oob_code: str, new_password: str):
+    """Process actual password reset with the oobCode and new password"""
+    try:
+        url = f"{endpoints.IDENTITY_TOOLKIT}accounts:resetPassword?key={constants.API_KEY}"
+        payload = {
+            "oobCode": oob_code,
+            "newPassword": new_password
+        }
+        response = requests.post(url, json=payload)
+        _raise_detailed_error(response)
+        return {"success": True}
+    except Exception as e:
+        logger.error(f"Error completing reset: {str(e)}")
         raise
