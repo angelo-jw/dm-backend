@@ -168,3 +168,6 @@ def get_activity_count_per_month(user_id: str, year: str):
     activities_list = [value for key, value in sorted(activities_by_month.items(), key=lambda item: item[1]['id'])]
 
     return {"content": activities_list}
+
+# test push
+
