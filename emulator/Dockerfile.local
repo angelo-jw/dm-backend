@@ -1,22 +1,13 @@
-FROM openjdk:11-jre-slim as firebase
+FROM openjdk:11-jre-slim
 
-# Install Node.js
 RUN apt-get update && \
     apt-get install -y curl gnupg && \
     curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Firebase CLI (pinned version)
 RUN npm install -g firebase-tools@12.4.0
 
-# Use /app to match docker-compose volume mounts
 WORKDIR /app
 
-# Files will be mounted from docker-compose volumes
-
-# Expose the necessary ports
-EXPOSE 9091 8081 4001 5001
-
-# Define entrypoint with debug logging
-ENTRYPOINT ["firebase", "emulators:start", "--only", "firestore,auth,functions", "--debug"]
+# The CMD is now fully controlled by docker-compose.yml

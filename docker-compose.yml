@@ -1,16 +1,50 @@
-version: '3.8'
 services:
+  web:
+    build: .
+    ports:
+      - "5001:5000"
+    volumes:
+      - .:/app
+    # Explicitly define environment variables for the container.
+    # Docker Compose will automatically substitute the values from your .env file.
+    environment:
+      - FLASK_APP=${FLASK_APP}
+      - FLASK_ENV=${FLASK_ENV}
+      - FLASK_DEBUG=${FLASK_DEBUG}
+      - GOOGLE_CREDENTIALS=${GOOGLE_CREDENTIALS}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - MAILGUN_API_KEY=${MAILGUN_API_KEY}
+      - MAILGUN_DOMAIN=${MAILGUN_DOMAIN}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - FIRESTORE_EMULATOR_HOST=firebase:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=firebase:9099
+    depends_on:
+      - firebase
+    command: >
+      sh -c "
+        while ! nc -z firebase 8080; do
+          echo 'Waiting for Firestore emulator...'
+          sleep 1;
+        done;
+        echo 'Firestore emulator is up.';
+        flask run --host=0.0.0.0
+      "
+
   firebase:
     build:
-      context: .
-      dockerfile: emulator/Dockerfile.local
-      target: firebase
+      context: ./emulator
+      dockerfile: Dockerfile.local
     ports:
-      - 9091:9091 # Firebase Authentication
-      - 8081:8081 # Cloud Firestore
-      - 4001:4001 # Emulator Suite UI
+      - "4000:4000" # Emulator Suite UI
+      - "8080:8080" # Firestore Emulator
+      - "9099:9099" # Auth Emulator
+    env_file:
+      - .env
     volumes:
-      - ./emulator/firebase.json:/app/firebase.json
-      - ./emulator/firestore.rules:/app/firestore.rules
-      - ./emulator/firestore.indexes.json:/app/firestore.indexes.json
-      - ./emulator/.firebaserc:/app/.firebaserc
+      - .:/app
+    command: 
+      - firebase
+      - emulators:start
+      - --project=${FIREBASE_PROJECT_ID}
+      - --only=auth,firestore

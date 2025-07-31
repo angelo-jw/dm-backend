@@ -1,27 +1,21 @@
-# Use an official Python runtime as a parent image
 FROM python:3.9-slim
 
-# Set the working directory in the container
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies, including netcat-openbsd for the healthcheck
 RUN apt-get update && \
-    apt-get install -y gcc python3-dev && \
+    apt-get install -y gcc python3-dev netcat-openbsd && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
+
 RUN pip install gunicorn pymysql cryptography
 
-# Copy the current directory contents into the container at /usr/src/app
 COPY domore.py .
 COPY config.py .
 COPY app app
 
+EXPOSE 5000
 
-ENV FLASK_APP domore.py
-
-EXPOSE 8080
-
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "--preload", "domore:app"]
+# The CMD is now handled in the docker-compose.yml to include the healthcheck
