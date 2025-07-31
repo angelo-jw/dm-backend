@@ -41,6 +41,20 @@ def _check_user_data(data):
     return None
 
 
+def validate(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if not request.headers.get("Authorization"):
+            return forbidden("Missing token")
+        try:
+            user = auth.verify_id_token(request.headers["Authorization"])
+            request.user = user
+        except Exception:
+            return unauthorized("Invalid token")
+        return f(*args, **kwargs)
+
+    return wrap
+
 @bp.route("auth/refresh-token", methods=["POST"])
 def refresh_token():
     try:
@@ -55,21 +69,6 @@ def refresh_token():
         if "INVALID_REFRESH_TOKEN" in str(e):
             return unauthorized("Invalid refresh token")
         return forbidden(str(e))
-
-
-def validate(f):
-    @wraps(f)
-    def wrap(*args, **kwargs):
-        if not request.headers.get("Authorization"):
-            return forbidden("Missing token")
-        try:
-            user = auth.verify_id_token(request.headers["Authorization"])
-            request.user = user
-        except Exception:
-            return unauthorized("Invalid token")
-        return f(*args, **kwargs)
-
-    return wrap
 
 
 @bp.route("auth/reset-password", methods=["POST"])

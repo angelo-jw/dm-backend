@@ -15,4 +15,5 @@ firestore.indexes.json
 firestore.rules
 .firebaserc
 serviceAccountKey.json
+venv
 **/.DS_Store

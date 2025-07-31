@@ -27,7 +27,7 @@ def create_app(config_class=Config):
     CORS(
         app,
         supports_credentials=True,
-        resources={r"/api/*": {"origins": "*"}},
+        resources={r"/api/*": {"origins": app.config.get("FRONTEND_URL") or "*"}},
     )
     app.config.from_object(config_class)
 
