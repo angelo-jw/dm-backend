@@ -35,6 +35,11 @@ def create_app(config_class=Config):
 
     app.register_blueprint(api_bp, url_prefix="/api")
 
+    print("--- REGISTERED ROUTES ---")
+    for rule in app.url_map.iter_rules():
+        print(f"Endpoint: {rule.endpoint}, Methods: {rule.methods}, URL: {rule.rule}")
+    print("--- END REGISTERED ROUTES ---")
+
     return app
 
 

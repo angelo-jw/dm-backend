@@ -1,10 +1,12 @@
-FROM python:3.9-slim
+FROM python:3.9.18-slim-bullseye
 
 WORKDIR /app
 
 # Install system dependencies, including netcat-openbsd for the healthcheck
 RUN apt-get update && \
-    apt-get install -y gcc python3-dev netcat-openbsd && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends gcc python3-dev netcat-openbsd && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt ./

@@ -2,7 +2,7 @@ services:
   web:
     build: .
     ports:
-      - "5001:5000"
+      - "5173:5000"
     volumes:
       - .:/app
     # Explicitly define environment variables for the container.

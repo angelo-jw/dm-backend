@@ -30,10 +30,26 @@ def create_user(data: dict):
         users_collection.document(user.id).set(user.to_dict())
         create_default_activity_types(user.id)
     except Exception as e:
+        # auth.delete_user(user_cred.uid)
+        # print(e)
+        # raise Exception("User creation failed")
+        logger.error(f"User creation failed, rolling back. Error: {e}")
         auth.delete_user(user_cred.uid)
-        print(e)
-        raise Exception("User creation failed")
+        raise e
     return user.to_dict()
+
+
+def get_user_by_id(uid: str):
+    """Gets a user by their UID from firestore"""
+    user_doc = users_collection.document(uid).get()
+    if user_doc.exists:
+        return user_doc.to_dict()
+    return None
+
+
+def update_user(uid: str, data: dict):
+    """updates a user's data in firestore"""
+    users_collection.document(uid).update(data)
 
 
 def login(data: dict):
